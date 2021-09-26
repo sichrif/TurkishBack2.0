@@ -9,28 +9,45 @@ const {
     verifyTokenAndAdmin,
   } = require("./verifyToken");
   
+const DIR = './public/';
+
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, './photo/');
+    destination: (req, file, cb) => {
+        cb(null, DIR);
     },
-    filename: function(req, file, cb) {   
-        cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
+    filename: (req, file, cb) => {
+        const fileName = file.originalname.toLowerCase().split(' ').join('-');
+        cb(null, uuidv4() + '-' + fileName)
     }
 });
-const fileFilter = (req, file, cb) => {
-    const allowedFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if(allowedFileTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(null, false);
+
+var upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+            cb(null, true);
+        } else {
+            cb(null, false);
+            return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+        }
     }
-}
-
-let upload = multer({ storage, fileFilter });
-
+});
 //create a pin
-router.post("/", async (req, res) => {
-  const newPin = new Pin(req.body);
+router.post("/", upload.array('imgCollection', 6),  async (req, res) => {
+  const reqFiles = [];
+  const url = req.protocol + '://' + req.get('host')
+  for (var i = 0; i < req.files.length; i++) {
+      reqFiles.push(url + '/public/' + req.files[i].filename)
+  }
+
+  const newPin = new Pin({
+   long: req.body.long,
+   lat: req.body.lat,
+   title: req.body.title,
+   desc: req.body.desc,
+   rating: req.body.rating,
+
+    imgCollection: reqFiles});
   try {
     const savedPin = await newPin.save();
     res.status(200).json(savedPin);
@@ -43,10 +60,28 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const pins = await Pin.find();
+    console.log(pins)
     res.status(200).json(pins);
   } catch (err) {
     res.status(500).json(err);
   }
 });
+//delete pin
+router.delete("/:id", verifyTokenAndAuthorization, async (req, res) => {
+  try {
+    await Pin.findByIdAndDelete(req.params.id);
+    res.status(203).json("Pin has been deleted...");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+//delete amm pin
+// router.delete("/del", async (req, res) => {
+//   try {
+//     await Pin.deleteMany({});
+    
+//   } catch (err) {
+//    }
+// });
 
 module.exports = router;

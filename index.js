@@ -20,6 +20,7 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+  app.use('/public', express.static('public'));
 
 app.use(cors());
 app.use(express.json());

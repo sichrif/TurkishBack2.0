@@ -9,9 +9,7 @@ const PinSchema = new mongoose.Schema(
       min: 3,
       max: 60,
     },
-    photo: {
-      type: String
-  },
+    
 
     desc: {
       type: String,
@@ -32,6 +30,10 @@ const PinSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    imgCollection:{
+      type: Array,
+    }
+
   },
   { timestamps: true }
 );
