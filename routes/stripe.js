@@ -111,7 +111,18 @@ router.get('/subscriptions', async (req, res) => {
    
   const subscriptions = await stripe.subscriptions.list({
    });
-   res.json({'subscriptions': [subscriptions.subscriptions]})
+
+// const obj = JSON.parse(JSON.stringify(subscriptions));
+// //const d=  JSON.stringify(obj.data);
+// const d= JSON.stringify(obj);
+// const k = JSON.parse(d);
+// const a = JSON.stringify(k);
+// const l = JSON.parse(a).data[0];
+// const obj = JSON.parse(JSON.stringify(subscriptions));
+//   const d=  JSON.parse(JSON.stringify(obj.subscriptions[0].data))
+const obj = JSON.parse(JSON.stringify(subscriptions));
+const d=  JSON.parse(JSON.stringify(obj.data))
+   res.json({'subscriptions':  Object.keys(d).length})
 
 })
 module.exports = router;
