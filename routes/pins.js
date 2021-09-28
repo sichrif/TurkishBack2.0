@@ -60,8 +60,7 @@ router.post("/", upload.array('imgCollection', 6),  async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const pins = await Pin.find();
-    console.log(pins)
-    res.status(200).json(pins);
+     res.status(200).json(pins);
   } catch (err) {
     res.status(500).json(err);
   }

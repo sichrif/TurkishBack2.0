@@ -26,7 +26,6 @@ router.post("/register", async (req, res) => {
   const status = subscription['latest_invoice']['payment_intent']['status'] 
 
   const client_secret = subscription['latest_invoice']['payment_intent']['client_secret']
-  console.log(subscription)
 
  
   const newUser = new User({
@@ -39,7 +38,6 @@ router.post("/register", async (req, res) => {
       process.env.PASS_SEC
     ).toString(),
   });
-  console.log(subscription)
 
   if(status==="succeeded")
   {
@@ -49,6 +47,10 @@ router.post("/register", async (req, res) => {
     } catch (err) {
       res.status(500).json(err);
     }
+  }else if(status=="requires_action"){
+    console.log(status)
+    const savedUser = await newUser.save();
+    res.status(201).json({'savedUser':savedUser,'client_secret': client_secret, 'status': status,'subscription':subscription});
   }else{
     res.status(550);
 
@@ -59,8 +61,7 @@ router.post("/register", async (req, res) => {
   }
 /////////////////////  
 
-});
-
+}); 
 //LOGIN
 
 router.post("/login", async (req, res) => {

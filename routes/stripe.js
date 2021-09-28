@@ -98,5 +98,20 @@ res.json({'client_secret': client_secret, 'status': status,'subscription':subscr
 
 })
 
+router.get('/balance', async (req, res) => {
+  stripe.balance.retrieve(function(err, balance) {
+    console.log(balance);
+    res.json({'balance': balance})
 
+  });
+  
+
+})
+router.get('/subscriptions', async (req, res) => {
+   
+  const subscriptions = await stripe.subscriptions.list({
+   });
+   res.json({'subscriptions': [subscriptions.subscriptions]})
+
+})
 module.exports = router;
