@@ -1,8 +1,11 @@
 const router = require("express").Router();
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
-let path = require('path');
+ const fs = require('fs')
+const { promisify } = require('util')
 const Pin = require("../models/Pin");
+const unlinkAsync = promisify(fs.unlink)
+
 const {
     verifyToken,
     verifyTokenAndAuthorization,
@@ -68,19 +71,47 @@ router.get("/", async (req, res) => {
 //delete pin
 router.delete("/:id", verifyTokenAndAuthorization, async (req, res) => {
   try {
+    const lepin =await Pin.findById(req.params.id);
+     for(let i  = 0 ; i< lepin.imgCollection.length ; i++){
+      const words = lepin.imgCollection[i].split(':');
+      const tow = words[2].split('public');
+      await unlinkAsync(DIR+tow[1]);
+    }
     await Pin.findByIdAndDelete(req.params.id);
     res.status(203).json("Pin has been deleted...");
   } catch (err) {
     res.status(500).json(err);
   }
 });
-//delete amm pin
-// router.delete("/del", async (req, res) => {
-//   try {
-//     await Pin.deleteMany({});
-    
-//   } catch (err) {
-//    }
-// });
+
+
+//get last 2 images
+const getSortedFiles = async (dir) => {
+  const files = await fs.promises.readdir(dir);
+
+  return files
+    .map(fileName => ({
+      name: fileName,
+      time: fs.statSync(`${dir}/${fileName}`).mtime.getTime(),
+    }))
+    .sort((a, b) => a.time - b.time)
+    .map(file => file.name);
+};
+
+
+
+
+router.get("/getimages", async (req, res) => {
+  try {
+    Promise.resolve()
+    .then(() => getSortedFiles(DIR))
+    //.then(response=>res.status(200).json(response.slice((response.length - 3), response.length)))
+    .then(response=>res.status(200).json(response[response.length-1]))
+    .catch(console.error);
+
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;
