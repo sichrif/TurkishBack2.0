@@ -129,13 +129,13 @@ const d=  JSON.parse(JSON.stringify(obj.data))
 router.post('/createcoupon', async (req, res) => {
   try {
      for(let i = 0; i<req.body.length;i++){
-      await stripe.coupons.create({
+     const coupons = await stripe.coupons.create({
         id:req.body[i],
         percent_off: 100,
         max_redemptions:1,
         duration: 'once',
-        duration_in_months: 3,
       });
+      console.log(coupons)
     }
 
     res.status(200).json("added successfully");
