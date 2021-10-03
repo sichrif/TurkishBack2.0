@@ -7,27 +7,12 @@ const stripemethods = require('./stripemethods')
 //REGISTER
 router.post("/register", async (req, res) => {
   ///////////////////
-  const {email,payment_method} = req.body; 
+  const {email} = req.body; 
  
   try {
     const customer = await stripe.customers.create({
-      payment_method: payment_method,
       email: email,
-      invoice_settings: {
-        default_payment_method: payment_method,
-      },
     });
-
-  const subscription = await stripe.subscriptions.create({
-    customer: customer.id,
-    items: [{ plan: process.env.PLAN }],
-    expand: ['latest_invoice.payment_intent']
-  });
-  const status = subscription['latest_invoice']['payment_intent']['status'] 
-
-  const client_secret = subscription['latest_invoice']['payment_intent']['client_secret']
-
- 
   const newUser = new User({
     firstname: req.body.firstname,
     lastname: req.body.lastname,
@@ -39,23 +24,12 @@ router.post("/register", async (req, res) => {
     ).toString(),
   });
 
-  if(status==="succeeded")
-  {
     try {
       const savedUser = await newUser.save();
-      res.status(201).json({'savedUser':savedUser,'client_secret': client_secret, 'status': status,'subscription':subscription});
+      res.status(201).json({'savedUser':savedUser});
     } catch (err) {
       res.status(500).json(err);
-    }
-  }else if(status=="requires_action"){
-    console.log(status)
-    const savedUser = await newUser.save();
-    res.status(201).json({'savedUser':savedUser,'client_secret': client_secret, 'status': status,'subscription':subscription});
-  }else{
-    res.status(550);
-
-  }
-  
+    }  
    } catch (error) {
    res.status(500).json(error)
   }

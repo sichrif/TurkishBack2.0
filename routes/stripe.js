@@ -125,4 +125,55 @@ const d=  JSON.parse(JSON.stringify(obj.data))
    res.json({'subscriptions':  Object.keys(d).length})
 
 })
+//create coupons
+router.post('/createcoupon', async (req, res) => {
+  try {
+     for(let i = 0; i<req.body.length;i++){
+      await stripe.coupons.create({
+        id:req.body[i],
+        percent_off: 100,
+        max_redemptions:1,
+        duration: 'once',
+        duration_in_months: 3,
+      });
+    }
+
+    res.status(200).json("added successfully");
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
+
+
+})
+
+const createCheckoutSession = async (customer) => {
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    customer:customer,
+    line_items: [{ price: process.env.PLAN ,quantity: 1}],
+    allow_promotion_codes: true,
+
+
+    success_url: `http://localhost:3000/`,
+    cancel_url: `http://localhost:3000/404`
+  })
+
+  return session
+}
+
+router.post("/checkout", async (req, res) => {
+  //const { customer } = req.body
+  try {
+
+    const session = await createCheckoutSession(req.body.subsId);
+    console.log(session);
+    res.send({ sessionId: session.id });
+  } catch (error) {
+    res.json({'error':error})
+  }
+
+});
+
 module.exports = router;
