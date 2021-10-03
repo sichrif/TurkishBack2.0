@@ -51,7 +51,19 @@ router.post("/login", async (req, res) => {
 
     OriginalPassword !== req.body.password &&
       res.status(401).json("Wrong credentials!");
+      let stripeSub = await stripe.subscriptions.list({customer: user.subsId});
+      let k = '';
+      const status = stripeSub.data;
+      if (!Array.isArray(status) || !status.length) {
+        // array does not exist, is not an array, or is empty
+        // ⇒ do not attempt to process array
+        res.status(401).json("You don't have any subscription");
+      }else{
+      k =    status[0].status
+      }
+     // !status && res.status(401).json("You don't have any subscription");
 
+     // console.log("mchrif000@gmail.com",stripeSub.data[0].status);
     const accessToken = jwt.sign(
       {
         id: user._id,
@@ -63,7 +75,7 @@ router.post("/login", async (req, res) => {
 
     const { password, ...others } = user._doc;
 
-    res.status(200).json({...others, accessToken});
+    res.status(200).json({...others, accessToken,k});
   } catch (err) {
     res.status(500).json(err);
   }

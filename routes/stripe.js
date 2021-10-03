@@ -156,7 +156,7 @@ const createCheckoutSession = async (customer) => {
     allow_promotion_codes: true,
 
 
-    success_url: `http://localhost:3000/`,
+    success_url: `http://localhost:3000?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `http://localhost:3000/404`
   })
 
@@ -166,14 +166,28 @@ const createCheckoutSession = async (customer) => {
 router.post("/checkout", async (req, res) => {
   //const { customer } = req.body
   try {
-
     const session = await createCheckoutSession(req.body.subsId);
-    console.log(session);
+    console.log("yess",session);
     res.send({ sessionId: session.id });
+  } catch (error) {
+    res.json({'error':error})
+  }
+});
+
+router.post("/retrieve", async (req, res) => {
+  //const { customer } = req.body
+  try {
+    let stripeSub = await stripe.subscriptions.list({customer: req.body.cus_id});
+
+   // const customer = await stripe.subscriptions.retrieve(req.body.cus_id)
+    res.send(stripeSub);
   } catch (error) {
     res.json({'error':error})
   }
 
 });
+
+
+
 
 module.exports = router;
