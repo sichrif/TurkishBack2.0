@@ -1,4 +1,5 @@
 const { stringify } = require("uuid");
+const User = require("../models/User");
 
 const router = require("express").Router();
 //const stripe = require("stripe")(process.env.STRIPE_KEY);
@@ -167,6 +168,19 @@ router.post("/checkout", async (req, res) => {
   //const { customer } = req.body
   try {
     const session = await createCheckoutSession(req.body.subsId);
+    console.log("yess",session);
+    res.send({ sessionId: session.id });
+  } catch (error) {
+    res.json({'error':error})
+  }
+});
+//checkout llogin
+router.post("/checkoutlogin", async (req, res) => {
+  //const { customer } = req.body
+  const user = await User.findOne({ email: req.body.subsId });
+console.log("jjjjjjj", req.body)
+  try {
+    const session = await createCheckoutSession(user.subsId);
     console.log("yess",session);
     res.send({ sessionId: session.id });
   } catch (error) {

@@ -52,14 +52,16 @@ router.post("/login", async (req, res) => {
     OriginalPassword !== req.body.password &&
       res.status(401).json("Wrong credentials!");
       let stripeSub = await stripe.subscriptions.list({customer: user.subsId});
+ 
       let k = '';
       const status = stripeSub.data;
       if (!Array.isArray(status) || !status.length) {
+        console.log("jdjddjd");
         // array does not exist, is not an array, or is empty
         // ⇒ do not attempt to process array
-        res.status(401).json("You don't have any subscription");
+       return res.status(401).json("You don't have any subscription");
       }else{
-      k =    status[0].status
+      k = status[0].status
       }
      // !status && res.status(401).json("You don't have any subscription");
 
